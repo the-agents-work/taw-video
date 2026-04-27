@@ -1,0 +1,20 @@
+{
+  "palette": {
+    "name": "claude-playful",
+    "bg": "#1A1A2E",
+    "primary": "#FF6B35",
+    "accent": "#F7B538",
+    "highlight": "#4ECDC4",
+    "text": "#FFF8E7"
+  },
+  "typography": {
+    "display": "Be Vietnam Pro",
+    "display_weight": 800,
+    "body": "Be Vietnam Pro",
+    "body_weight": 500
+  },
+  "motion_style": "playful",
+  "aspect": "9:16",
+  "fps": 30,
+  "dimensions": { "width": 1080, "height": 1920 }
+}

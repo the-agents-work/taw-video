@@ -1,0 +1,50 @@
+{
+  "language": "vi",
+  "audience": "dân văn phòng",
+  "tone": "vui tươi gen-Z",
+  "scenes": [
+    {
+      "id": "s1",
+      "type": "title-card",
+      "duration_sec": 4,
+      "headline": "Dân văn phòng ơi!",
+      "subhead": "Đã thử Claude.ai chưa?",
+      "decoration": "emoji_sparkle"
+    },
+    {
+      "id": "s2",
+      "type": "kinetic-quote",
+      "duration_sec": 7,
+      "tag": "Lý do #1",
+      "headline": "Tóm tắt tài liệu 100 trang",
+      "punchline": "trong 5 giây",
+      "footnote": "Hợp đồng, email dài, báo cáo — gửi vào là xong"
+    },
+    {
+      "id": "s3",
+      "type": "kinetic-quote",
+      "duration_sec": 7,
+      "tag": "Lý do #2",
+      "headline": "Viết email + báo cáo",
+      "punchline": "siêu pro, đỡ stress",
+      "footnote": "Bảo Claude tone gì là viết tone đó"
+    },
+    {
+      "id": "s4",
+      "type": "kinetic-quote",
+      "duration_sec": 7,
+      "tag": "Lý do #3",
+      "headline": "Tiếng Việt mượt mà",
+      "punchline": "hiểu đúng ngữ cảnh",
+      "footnote": "Không bị dịch máy cứng đơ như mấy bot khác"
+    },
+    {
+      "id": "s5",
+      "type": "end-card",
+      "duration_sec": 5,
+      "headline": "Claude.ai",
+      "subhead": "Thử ngay — miễn phí",
+      "cta": "claude.ai"
+    }
+  ]
+}

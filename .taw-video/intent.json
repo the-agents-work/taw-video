@@ -1,0 +1,21 @@
+{
+  "tier1": "CREATE",
+  "raw": "làm video 30 giây giới thiệu 3 lý do nên dùng Claude.ai",
+  "mode": "safe",
+  "branch_loaded": "branches/create.md",
+  "format": "product-demo",
+  "topic": "Claude.ai - 3 lý do nên dùng",
+  "duration_sec": 30,
+  "clarifications": {
+    "aspect": "9:16",
+    "audience": "dân văn phòng",
+    "three_reasons_picked_by": "assistant",
+    "three_reasons": [
+      "Tóm tắt tài liệu / email dài chỉ trong vài giây",
+      "Soạn email + báo cáo chuyên nghiệp, đỡ stress",
+      "Tiếng Việt tự nhiên, hiểu đúng ngữ cảnh"
+    ],
+    "tone": "vui tươi gen-Z",
+    "bgm": false
+  }
+}

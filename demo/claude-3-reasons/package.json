@@ -1,0 +1,15 @@
+{
+  "name": "claude-3-reasons",
+  "version": "1.0.0",
+  "description": "Claude.ai 3 reasons product demo — 30s 9:16 silent",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "render": "remotion render",
+    "render:9x16": "remotion render src/index.ts claude-3-reasons-9x16 out/video-9x16.mp4 --codec=h264"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
