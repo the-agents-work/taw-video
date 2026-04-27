@@ -83,7 +83,7 @@ After edits, ask: "Render lại luôn không? (y / sau)"
 
 ## Step 4 — Commit
 
-Invoke `taw-commit` with appropriate type:
+Invoke `taw-video-commit` with appropriate type:
 - Scene/script change → `feat(video): <summary>`
 - Voice/BGM swap → `chore(video): <summary>`
 - Style tweak (palette/font) → `style(video): <summary>`

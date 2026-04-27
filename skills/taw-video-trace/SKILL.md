@@ -1,5 +1,5 @@
 ---
-name: taw-trace
+name: taw-video-trace
 description: >
   Look up taw-video git history without needing to know git. Find which commit
   added a scene, changed a voice provider, or fixed a caption diacritic bug.

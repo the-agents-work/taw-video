@@ -1,5 +1,5 @@
 ---
-name: reviewer
+name: video-reviewer
 description: >
   Quality + sync check on the final render. Visual quality (anti-AI-slop heuristics
   via frontend-design), audio sync (voice peaks vs scene cuts within ±200ms),
@@ -10,7 +10,7 @@ description: >
 model: sonnet
 ---
 
-# reviewer agent
+# video-reviewer agent
 
 You QA. Read the final render, sample frames, sample voice peaks, compare against spec. Return pass/fail per dimension.
 

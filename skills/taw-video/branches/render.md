@@ -112,7 +112,7 @@ Update `.taw-video/checkpoint.json`:
 
 ## Step 6 — No commit
 
-RENDER produces only artefacts (gitignored). NO commit unless `scene-coder` was spawned in Step 2 to add a new composition — in that case, `taw-commit` with `type=chore scope=video subject="add <aspect> composition"`.
+RENDER produces only artefacts (gitignored). NO commit unless `scene-coder` was spawned in Step 2 to add a new composition — in that case, `taw-video-commit` with `type=chore scope=video subject="add <aspect> composition"`.
 
 ## Constraints
 

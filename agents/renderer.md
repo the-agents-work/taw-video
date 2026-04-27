@@ -166,7 +166,7 @@ Plus 1-line summary:
 2. **Render artefacts are gitignored** — DO NOT git-add anything from `out/` or `public/voice.mp3`.
 3. **Concurrency cap** — `--concurrency=4` is fine on most machines, but if Mac has <16GB RAM, drop to 2.
 4. **Time budget**: typical 60s video at 1080p ~30s render, 4K ~3min. Warn user via orchestrator if estimated >5min.
-5. **Don't commit** — orchestrator runs `taw-commit` after you, on the source code (not the render output).
+5. **Don't commit** — orchestrator runs `taw-video-commit` after you, on the source code (not the render output).
 6. **Don't auto-upload to YT/TikTok** — out of scope and user must explicitly opt in.
 
 ## Constraints

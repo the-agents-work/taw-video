@@ -53,7 +53,7 @@ If `package.json` shows existing Remotion v3 → upgrade path: ask first, don't 
 | Math/data-viz scene Remotion struggles with | **`manim-fallback`** (escape hatch) |
 | Unfamiliar Remotion 4 API | **`docs-seeker`** with query "Remotion 4 <feature>" |
 
-Skills you must NOT call: `taw-commit` (orchestrator does that), `voice-tts-vi` (parallel branch handles voice), `ffmpeg-pipeline` (renderer agent's job).
+Skills you must NOT call: `taw-video-commit` (orchestrator does that), `voice-tts-vi` (parallel branch handles voice), `ffmpeg-pipeline` (renderer agent's job).
 
 ## Workflow
 
@@ -163,7 +163,7 @@ Files written:
 3. **Tailwind only** — no styled-components, no CSS-in-JS, no inline styles for layout (only for dynamic colors from design.json).
 4. **VN strings must use motion-presets-vi components** when prominent (≥48px font) — otherwise diacritic glitches.
 5. **No external API calls in scenes** — Remotion render is parallel; API calls block. Pre-fetch assets at build time.
-6. **Never commit `.mp4`/`.wav`/`.mp3` outputs** — `taw-commit` skill handles, but check `git status` shows only `.tsx` files in your changes.
+6. **Never commit `.mp4`/`.wav`/`.mp3` outputs** — `taw-video-commit` skill handles, but check `git status` shows only `.tsx` files in your changes.
 
 ## Constraints
 

@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# tawvideo — main entry point
+# Usage:
+#   tawvideo install | update | uninstall | doctor | new <preset> | --help | --version
+
+set -eu
+
+# Resolve TAW_VIDEO_ROOT: prefer $TAW_VIDEO_ROOT env, then $HOME/.taw-video, then script parent
+if [ -n "${TAW_VIDEO_ROOT:-}" ] && [ -f "$TAW_VIDEO_ROOT/scripts/tawvideo" ]; then
+  :
+elif [ -f "$HOME/.taw-video/scripts/tawvideo" ]; then
+  TAW_VIDEO_ROOT="$HOME/.taw-video"
+else
+  # Assume we're running from a clone: /path/to/taw-video/scripts/tawvideo
+  TAW_VIDEO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+fi
+export TAW_VIDEO_ROOT
+
+# shellcheck source=lib/log.sh
+. "$TAW_VIDEO_ROOT/scripts/lib/log.sh"
+
+show_help() {
+  cat <<'EOF'
+tawvideo — motion-graphic video kit for non-developers
+
+USAGE:
+  tawvideo install            Install all skills, agents, and hooks into ~/.claude/
+  tawvideo update             Update the kit to the latest version
+  tawvideo uninstall          Remove taw-video files (your other skills stay intact)
+  tawvideo uninstall --full   Remove everything, including ~/.taw-video/ clone
+  tawvideo doctor             Check that your machine has everything set up
+  tawvideo new <preset>       Scaffold a new video project from a preset
+  tawvideo --help             Show this help
+  tawvideo --version          Show the installed version
+
+EXAMPLES:
+  tawvideo install                        # first-time setup
+  tawvideo doctor                         # when something feels off
+  tawvideo new tutorial-explainer         # start a 60s tutorial scaffold
+  tawvideo new faceless-channel           # start a faceless YT/TikTok video
+  tawvideo update                         # when a new version ships
+
+PRESETS:
+  tutorial-explainer    educational how-to (60–180s)
+  faceless-channel      YT/TikTok faceless content (60–180s)
+  news-recap            quick news summary (45–90s)
+  product-demo          SaaS/product features + CTA (30–60s)
+  kinetic-typography    pure motion text, no voice (15–30s)
+
+Coexists with taw-kit (web/app kit) — install both safely on the same machine.
+
+Full docs: https://github.com/the-agents-work/taw-video
+EOF
+}
+
+case "${1:-}" in
+  install)
+    shift
+    exec bash "$TAW_VIDEO_ROOT/scripts/install.sh" "$@"
+    ;;
+  update)
+    shift
+    if [ -f "$TAW_VIDEO_ROOT/scripts/update.sh" ]; then
+      exec bash "$TAW_VIDEO_ROOT/scripts/update.sh" "$@"
+    else
+      info "update.sh not yet implemented in v0.1 — for now:"
+      info "  cd $TAW_VIDEO_ROOT && git pull && bash scripts/install.sh"
+      exit 0
+    fi
+    ;;
+  uninstall)
+    shift
+    exec bash "$TAW_VIDEO_ROOT/scripts/uninstall.sh" "$@"
+    ;;
+  doctor)
+    shift
+    exec bash "$TAW_VIDEO_ROOT/scripts/doctor.sh" "$@"
+    ;;
+  new)
+    shift
+    if [ $# -eq 0 ]; then
+      err "missing preset name. Example: tawvideo new tutorial-explainer"
+      info "list available presets: ls $TAW_VIDEO_ROOT/presets/"
+      exit 1
+    fi
+    preset="$1"
+    if [ ! -f "$TAW_VIDEO_ROOT/presets/$preset.md" ]; then
+      err "preset not found: $preset"
+      info "list available presets: ls $TAW_VIDEO_ROOT/presets/"
+      exit 1
+    fi
+    if ! command -v claude >/dev/null 2>&1; then
+      err "Claude Code is not installed. See: https://docs.claude.com/claude-code"
+      exit 3
+    fi
+    info "starting Claude Code with /taw-video preset:$preset"
+    exec claude "/taw-video preset:$preset"
+    ;;
+  --help|-h|help)
+    show_help
+    ;;
+  --version|-v|version)
+    cat "$TAW_VIDEO_ROOT/VERSION"
+    ;;
+  '')
+    show_help
+    ;;
+  *)
+    err "unknown command: $1"
+    show_help
+    exit 1
+    ;;
+esac

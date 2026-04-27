@@ -76,7 +76,7 @@ Between steps inside a branch, emit a short progress line:
 
 After a branch completes its main work, before emitting the final "Done":
 
-1. **Commit** — if the branch made code changes (Remotion source, scene components, config), invoke `taw-commit` with the appropriate `type` (feat/fix/chore/refactor) plus phase tag if in CONTEXT mode.
+1. **Commit** — if the branch made code changes (Remotion source, scene components, config), invoke `taw-video-commit` with the appropriate `type` (feat/fix/chore/refactor) plus phase tag if in CONTEXT mode.
 2. **NEVER commit render artefacts.** `.gitignore` blocks `*.mp4`, `*.mov`, `*.wav`, etc. If user asks "save the video", point them to `out/` directory — those files are deliberately not in git.
 3. **Update checkpoint** — write `.taw-video/checkpoint.json` with `{status, last_branch, last_render_path?, duration_sec?}`.
 4. **Next-step hints** — final message suggests 2–3 relevant next commands:

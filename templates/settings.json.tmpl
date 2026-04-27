@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_taw_video_meta": {
+    "version": "{{TAW_VIDEO_VERSION}}",
+    "managed_by": "taw-video",
+    "note": "Hooks below are added by taw-video install. Each fires alongside any taw-kit hooks of similar purpose — both kits coexist."
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/hooks/taw-video-session-start.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/hooks/taw-video-auto-commit.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/hooks/taw-video-permission-classifier.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

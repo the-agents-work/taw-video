@@ -89,7 +89,7 @@ Same as CREATE Step 5, but:
 - IF remixing from external source folder, COPY `src/scenes/*.tsx` from source first, then `scene-coder` adapts CONTENT (text strings, data values) — not structure.
 - SPAWN `voice-tts-vi` skill on new script.
 - SPAWN `motion-tuner` if any scene's text length differs ≥30% from source (animation timing needs re-fit).
-- SPAWN `renderer` + `reviewer` as usual.
+- SPAWN `renderer` + `video-reviewer` as usual.
 
 ## Step 8 — Output
 

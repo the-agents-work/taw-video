@@ -1,5 +1,5 @@
 ---
-name: taw-commit
+name: taw-video-commit
 description: >
   taw-video's unified commit skill: stages files, scans for secrets/render-artefact
   leaks, generates a conventional commit message by READING the actual diff (not

@@ -96,7 +96,7 @@ Use Task tool. Order is FIXED. Each step waits for previous EXCEPT 5.2 (parallel
    - Mux video + voice + captions via `ffmpeg-pipeline` skill.
    - Save to `out/<slug>-<aspect>.mp4`.
 
-4. **`reviewer`** — runs visual + audio sync checks:
+4. **`video-reviewer`** — runs visual + audio sync checks:
    - Random-frame screenshot 4 frames, eyeball check (does it look like AI slop or distinctive?).
    - Audio sync: pick 3 voice peaks, check scene cut alignment within ±200ms.
    - Subtitle correctness: VTT renders all VN diacritics (no � chars in burn).
@@ -148,7 +148,7 @@ Update `.taw-video/checkpoint.json`:
 
 ## Step 8 — Commit (auto)
 
-Invoke `taw-commit` skill with `type=feat` `scope=video` and a generated subject like:
+Invoke `taw-video-commit` skill with `type=feat` `scope=video` and a generated subject like:
 
 ```
 feat(video): scaffold tutorial about ChatGPT (~60s, 1080p)
