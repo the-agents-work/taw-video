@@ -1,0 +1,35 @@
+taw-video — Source-Available License (Public Beta)
+
+Copyright (c) 2026 taw-video. All rights reserved.
+
+Full terms: docs/legal/LICENSE.md
+
+===============================================================================
+
+TL;DR — plain English
+
+  ALLOWED (free):
+    - Clone this repo.
+    - Install taw-video on your own machines.
+    - Use it to make unlimited videos, ads, tutorials, motion graphics.
+    - Videos you produce are YOURS 100% — no royalty, no attribution.
+    - Modify skills, agents, hooks, templates for your own use.
+    - Share screenshots, tutorials, reviews.
+
+  NOT ALLOWED:
+    - Redistribute this repo (re-upload, mirror, fork + publish elsewhere,
+      upload to package registries or marketplaces).
+    - Resell taw-video, or any rebranded / repackaged derivative of it.
+    - Sublicense any part of taw-video to third parties.
+    - Remove these copyright notices.
+
+Only the kit itself is restricted. The videos you produce with it are free
+of any claim by this license.
+
+===============================================================================
+
+Author reserves the right to change license terms in future versions
+(for example, introducing a paid tier). Clones obtained under this version
+continue under these terms.
+
+Contact for commercial / redistribution inquiries: namkent1612000@gmail.com
