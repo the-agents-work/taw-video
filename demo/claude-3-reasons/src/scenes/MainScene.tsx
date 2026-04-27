@@ -41,9 +41,11 @@ const WIPE_DURATION = 20; // frames for wipe transition
  */
 const WipeIn: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const frame = useCurrentFrame();
+  // playful wipe: fast initial sweep (ease-in-out-quart feel) — snappy cut energy
   const clipPercent = interpolate(frame, [0, WIPE_DURATION], [0, 100], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.77, 0, 0.175, 1),
   });
   return (
     <AbsoluteFill

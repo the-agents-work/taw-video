@@ -8,7 +8,6 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Eas
 import { loadFont } from '@remotion/google-fonts/BeVietnamPro';
 import { palette } from '../theme';
 import { WordStagger } from '../motion-presets-vi/WordStagger';
-import { toWordTokens } from '../motion-presets-vi/normalize';
 
 const { fontFamily } = loadFont();
 
@@ -81,10 +80,6 @@ export const KineticQuote: React.FC<KineticQuoteProps> = ({
 
   // Punchline scale: spring overshoots naturally above 1.0 for playful feel
   const punchlineScale = interpolate(punchlineProgress, [0, 1], [0.6, 1]);
-
-  // Word count of headline for stagger timing
-  const headlineWords = toWordTokens(headline);
-  const headlineDuration = 12 + headlineWords.length * 4;
 
   return (
     <AbsoluteFill
