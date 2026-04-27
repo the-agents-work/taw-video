@@ -1,0 +1,11 @@
+{
+  "status": "ready",
+  "last_branch": "create",
+  "last_render_path": "demo/claude-3-reasons/out/claude-3-reasons-9x16.mp4",
+  "duration_sec": 30,
+  "size_mb": 2.1,
+  "format": "product-demo",
+  "aspect": "9:16",
+  "topic": "Claude.ai - 3 lý do dân văn phòng",
+  "scope_hint": "scene"
+}
