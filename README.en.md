@@ -145,4 +145,4 @@ Source-available — see [LICENSE](./LICENSE) and [THIRD-PARTY-NOTICES.md](./THI
 
 ## Support
 
-namkent1612000@gmail.com or [theagents.work](https://www.theagents.work/).
+nghiahsgs@gmail.com or [theagents.work](https://www.theagents.work/).

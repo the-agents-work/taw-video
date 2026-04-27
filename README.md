@@ -216,4 +216,4 @@ Source-available — free dùng trong public beta. Xem [LICENSE](./LICENSE).
 
 ## Hỗ trợ
 
-namkent1612000@gmail.com hoặc Discord [theagents.work](https://www.theagents.work/).
+nghiahsgs@gmail.com hoặc Discord [theagents.work](https://www.theagents.work/).
