@@ -1,8 +1,8 @@
 # branch: REMIX
 
-Routed here when user wants to reuse an existing video's structure (scenes, motion style, palette, BGM) but with new content. Lighter than CREATE (skips storyboard from scratch); heavier than EDIT (regenerates script + voice).
+Routed here when user wants to reuse an existing video's structure (scenes, motion style, palette, BGM) but with new content. Lighter than CREATE (skips storyboard from scratch); heavier than EDIT (regenerates scene text + re-renders).
 
-**Prereq:** router classified `tier1 = REMIX`. There must be a "source video" to remix — either:
+**Prereq:** router classified `tier1 = REMIX`. There must be a "source video" to remix:
 - Current folder is itself a taw-video project → use it as source
 - User points to another folder: `/taw-video remix from ../my-old-video`
 - User says "tuần trước" / "last week's" → look in `~/.taw-video-history/` (if local cache exists) or ask path
@@ -12,12 +12,12 @@ Routed here when user wants to reuse an existing video's structure (scenes, moti
 Try in order:
 1. Current folder has `.taw-video/storyboard.md` → use it.
 2. User prose contains a path → resolve it.
-3. Look at `~/.taw-video-history/recent.json` (if kit maintains a recent list — opt-in).
-4. Otherwise ask: "Anh muốn remix từ folder nào? (paste path hoặc tên dự án trong ~/Documents/GitHub/)"
+3. Otherwise ask: "Anh muốn remix từ folder nào? (paste path hoặc tên dự án trong ~/Documents/GitHub/)"
 
 Read source's:
 - `.taw-video/storyboard.md` — scene structure, beats, transitions
 - `.taw-video/design.json` — palette + typography + motion style
+- `.taw-video/scene-text.json` — on-screen text payload (we'll replace content)
 - `.taw-video/intent.json` — original format + clarifications
 - `src/scenes/*.tsx` — actual scene components
 
@@ -33,8 +33,6 @@ Generate `.taw-video/style-fingerprint.json` from source:
   "typography": {"display": "Be Vietnam Pro Bold", "body": "Inter"},
   "motion_style": "playful",
   "transitions": ["fade", "swipe-left", "scale-pop", "fade"],
-  "voice_provider": "fpt-ai",
-  "voice_id": "leminh",
   "bgm_mood": "chill-electronic",
   "aspect_primary": "9:16"
 }
@@ -46,27 +44,26 @@ This is the "look" we keep.
 
 Parse user prose for the NEW topic.
 
-If user provided full topic in one line → continue to Step 4. Else ask: "Anh remix với chủ đề mới nào? (1 câu mô tả nội dung)"
+If user provided full topic → Step 4. Else ask: "Anh remix với chủ đề mới nào? (1 câu mô tả nội dung)"
 
 Write to `.taw-video/intent.json` as `{format: <from source>, raw: <new topic>, source: "remix-of:<source-path>"}`.
 
-## Step 4 — Generate new script (matches structure)
+## Step 4 — Generate new scene text (matches structure)
 
 Spawn `script-writer` agent with extra constraint:
 
 ```
-Generate a new narration that:
+Generate new scene text that:
 - Matches the scene structure from style-fingerprint.json (5 scenes: title-card / kinetic-quote / data-bar / comparison-split / end-card)
-- Matches the per-scene duration from style-fingerprint.json
-- Uses the same tone/voice as the source (read 2–3 lines from source script.txt for voice match)
+- Matches the per-scene visual density from style-fingerprint.json (so animation timing still fits)
 - Topic: <user new topic>
 ```
 
-Output: `.taw-video/script.txt`.
+Output: `.taw-video/scene-text.json` (new content).
 
 ## Step 5 — Storyboard auto-fill
 
-Use source's storyboard as template. Replace scene CONTENT (text, data points, images referenced) with new ones tied to new script. KEEP: scene types, durations, transitions, palette, typography, motion-style.
+Use source's storyboard as template. Replace scene CONTENT (text, data points, images referenced) with new ones. KEEP: scene types, durations, transitions, palette, typography, motion-style.
 
 Write `.taw-video/storyboard.md` (remixed). Save updated `.taw-video/design.json` (copy from source unless user asked to change palette/font).
 
@@ -74,7 +71,7 @@ Write `.taw-video/storyboard.md` (remixed). Save updated `.taw-video/design.json
 
 **If `mode == "yolo"`:** skip.
 
-**If `mode == "safe"`:** echo storyboard delta (only the changed content rows, not the whole table) + emit:
+**If `mode == "safe"`:** echo storyboard delta (only changed content rows) + emit:
 
 ```
 Remix với cấu trúc cũ + nội dung mới — ok chưa anh? (yes / sửa / huỷ)
@@ -87,7 +84,6 @@ WAIT.
 Same as CREATE Step 5, but:
 - SKIP `scene-coder` initial scaffold IF scenes already exist in current folder (we're remixing in-place).
 - IF remixing from external source folder, COPY `src/scenes/*.tsx` from source first, then `scene-coder` adapts CONTENT (text strings, data values) — not structure.
-- SPAWN `voice-tts-vi` skill on new script.
 - SPAWN `motion-tuner` if any scene's text length differs ≥30% from source (animation timing needs re-fit).
 - SPAWN `renderer` + `video-reviewer` as usual.
 
@@ -110,7 +106,7 @@ Bước tiếp:
 ```
 feat(video): remix <source-name> with new content about <topic>
 
-- script.txt + voice.mp3 regenerated
+- scene-text.json regenerated
 - scene structure preserved from source
 - palette/font/motion-style kept
 
@@ -120,6 +116,4 @@ Refs: remix-of:<source-path>
 ## Constraints
 
 - REMIX never changes scene STRUCTURE — only content. If user wants different structure, they should run CREATE.
-- TTS regen always required (new script ≠ old voice).
-- BGM may need regen if mood mismatch with new tone — check via `bgm-picker` skill.
-- Honour source's voice provider unless user explicitly asks to switch.
+- BGM may need swap if mood mismatch with new tone — check via `bgm-picker` skill.

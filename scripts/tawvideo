@@ -41,11 +41,14 @@ EXAMPLES:
   tawvideo update                         # when a new version ships
 
 PRESETS:
-  tutorial-explainer    educational how-to (60–180s)
-  faceless-channel      YT/TikTok faceless content (60–180s)
-  news-recap            quick news summary (45–90s)
-  product-demo          SaaS/product features + CTA (30–60s)
-  kinetic-typography    pure motion text, no voice (15–30s)
+  tutorial-explainer    educational how-to motion graphic (45–120s)
+  faceless-channel      YT/TikTok faceless motion content (45–120s)
+  news-recap            quick news summary, kinetic headlines (30–60s)
+  product-demo          features + benefits + CTA (20–45s)
+  kinetic-typography    pure motion text, BGM-driven (15–30s)
+
+Output is SILENT video — add voice in your editor (CapCut / Premiere / DaVinci)
+if you want narration. taw-video does not generate voice.
 
 Coexists with taw-kit (web/app kit) — install both safely on the same machine.
 

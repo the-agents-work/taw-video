@@ -6,8 +6,6 @@ Routed here when user wants to re-export an existing video project to a differen
 
 ## Step 1 — Parse render target
 
-User prose maps to render config. Common patterns:
-
 | User says | Aspect | Resolution | Use case |
 |---|---|---|---|
 | "9:16", "shorts", "tiktok", "reels" | 9:16 | 1080×1920 | TikTok, YT Shorts, IG Reels |
@@ -47,8 +45,6 @@ Read `src/Root.tsx`. Remotion projects following taw-video convention have one c
 
 ## Step 3 — Run render
 
-Bash:
-
 ```bash
 npx remotion render \
   src/index.ts \
@@ -67,23 +63,11 @@ Variables:
 
 For GIF: use `--codec=gif --quality=80 --gif-loop` instead of MP4 args.
 
+If a BGM file is referenced inside `src/Root.tsx` (`<Audio src={staticFile('bgm.mp3')}>`), Remotion bundles it automatically — no separate mux needed.
+
 Pipe output to log; on error invoke `error-to-vi` skill to translate stderr.
 
-## Step 4 — Mux audio + captions (if not already in Remotion source)
-
-If voice + captions are NOT in the Remotion `<Audio>` / `<Caption>` composition (i.e. user wants to add them at this stage), invoke `ffmpeg-pipeline` skill:
-
-```bash
-ffmpeg -i out/<slug>-<aspect>.mp4 \
-       -i public/voice.mp3 \
-       -c:v copy -c:a aac \
-       -map 0:v -map 1:a \
-       out/<slug>-<aspect>-final.mp4
-```
-
-For burn-in subs, add `-vf "subtitles=public/captions.vtt:force_style='FontName=Be Vietnam Pro,FontSize=24'"` (handled by `captions-vi-burn` skill which fixes VN diacritic font issues).
-
-## Step 5 — Report
+## Step 4 — Report
 
 Emit (VN default):
 
@@ -110,13 +94,13 @@ Update `.taw-video/checkpoint.json`:
 }
 ```
 
-## Step 6 — No commit
+## Step 5 — No commit
 
 RENDER produces only artefacts (gitignored). NO commit unless `scene-coder` was spawned in Step 2 to add a new composition — in that case, `taw-video-commit` with `type=chore scope=video subject="add <aspect> composition"`.
 
 ## Constraints
 
 - NEVER overwrite an existing render. Use versioned filenames if same aspect re-rendered.
-- Render is parallel-safe per aspect (different output files), but DO NOT run >2 renders simultaneously on user's machine — Remotion is CPU-heavy.
+- DO NOT run >2 renders simultaneously — Remotion is CPU-heavy.
 - For Remotion Lambda (cloud render), check `.env.local` for `REMOTION_AWS_ACCESS_KEY_ID` — if present, offer `--lambda` flag. Otherwise local render only.
-- Estimate time before render: typical Remotion render is ~realtime (60s video = 60s render at default settings). 4K + complex scenes can hit 5× realtime. Warn user if estimated > 3 minutes.
+- Estimate time: typical Remotion render is ~realtime (60s video = 60s render at default settings). 4K + complex scenes can hit 5× realtime. Warn user if estimated > 3 minutes.

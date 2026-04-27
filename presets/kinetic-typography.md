@@ -1,6 +1,6 @@
 # Preset: kinetic-typography
 
-Pure motion text. NO voice required. 15–30s. Heavy reliance on `motion-presets-vi` for diacritic-correct animation.
+Pure motion text. 15–30s. Heavy reliance on `motion-presets-vi` for diacritic-correct animation. BGM is the only audio — text + visuals carry everything.
 
 ## Pre-filled defaults
 
@@ -10,10 +10,6 @@ duration_sec: 20
 aspect_primary: 9:16    # vertical for max VN consumption
 aspect_secondary: 1:1
 fps: 60                 # 60fps for smooth fast motion
-
-voice:
-  provider: none         # NO voice — text + music only
-  voice_id: null
 
 palette:
   bg: "#000000"
@@ -29,6 +25,8 @@ typography:
 
 motion_style: aggressive # peak-energy, fast cuts
 
+on_screen_text_density: low  # ~25 words across all beats; each word IS a moment
+
 scene_structure:
   # Each "scene" is really a beat. Lots of beats per video, short individually.
   - { type: HeadlineCallout, duration: 2 }    # set up (1 word)
@@ -42,17 +40,13 @@ scene_structure:
 
 bgm:
   mood: trap-aggressive   # OR cinematic-orchestral OR lofi-chill
-  volume: 0.8             # higher because no voice to compete
-  duck_under_voice: false # no voice
+  optional: false         # mandatory — silent kinetic typography is dead
   beat_sync: true         # cuts on beat (downstream feature)
-
-captions:
-  burn_in: false          # text IS the captions
 ```
 
 ## Diacritic test phrases
 
-When designing text, USE these test phrases to validate motion-presets handle VN correctly:
+When designing text, USE these to validate motion-presets handle VN correctly:
 
 ```
 "đường về nhà ngắn lại sau mỗi mùa thu vàng ươm những giấc mộng"
@@ -77,12 +71,12 @@ Without voice, BGM CARRIES the emotion. Pick deliberately:
 
 - Motivational/quote-style content
 - Aesthetic Instagram reels
-- Music video accompaniment
 - Brand identity reels
 - Opening/closing animation for longer video
+- Music video accompaniment
 
 ## When NOT to use
 
-- Anything requiring narration/explanation → use other presets
+- Anything requiring narration/explanation → use other presets (still silent, but with more on-screen text)
 - Long-form (>30s) → kinetic typography exhausts viewer
 - Comparison / data viz → text-only too sparse for those formats

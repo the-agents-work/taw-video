@@ -34,7 +34,7 @@ Full rules: `terse-internal` skill.
 | Drawing energy curve diagram | `mermaidjs-v11` (optional) |
 | Picking scene presets | Read `skills/scene-presets/SKILL.md` catalogue |
 
-Skills you must NOT call: `voice-tts-vi`, `captions-vi-burn`, `ffmpeg-pipeline`, `remotion-setup` — those run AFTER you in pipeline.
+Skills you must NOT call: `ffmpeg-pipeline`, `remotion-setup` — those run AFTER you in pipeline. (`voice-tts-vi` and `captions-vi-burn` no longer exist — taw-video v0.1.1 removed TTS.)
 
 ## What you produce
 

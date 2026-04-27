@@ -11,9 +11,9 @@ Used by `storyboard-planner` agent to render the scene plan. Always echo to user
 - Format: <tutorial-explainer | faceless-channel | news-recap | product-demo | kinetic-typography>
 - Thời lượng: ~<duration>s
 - Tỉ lệ chính: <16:9 | 9:16 | 1:1>
-- Voice: <provider> / <voice-id> (<gender>, <region>)
 - Palette: <color1> · <color2> · <color3>
-- Nhạc nền: <BGM mood> (royalty-free)
+- Font: <display> + <body>
+- Nhạc nền: <BGM mood> (royalty-free) hoặc không có
 
 **Cảnh**
 
@@ -26,6 +26,7 @@ Used by `storyboard-planner` agent to render the scene plan. Always echo to user
 | 5 | end-card | 5s | "CTA + outro logo" | 4/5 |
 
 **Tổng**: <sum>s
+**Lưu ý**: video silent — anh thêm voice trong CapCut/Premiere/DaVinci nếu muốn.
 ```
 
 ## Rules

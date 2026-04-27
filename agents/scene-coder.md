@@ -48,12 +48,11 @@ If `package.json` shows existing Remotion v3 → upgrade path: ask first, don't 
 | Need Remotion project scaffolded | **`remotion-setup`** (first run only) |
 | Build a scene with prominent VN text | **`motion-presets-vi`** (handles diacritics) |
 | Pick a scene type from catalogue | **`scene-presets`** (TitleCard, LowerThird, etc.) |
-| Add captions to a scene | **`captions-vi-burn`** (only if NOT done at render step) |
 | Need an asset (image, icon, BG) | **`asset-generator`** (or use placeholder if stubbed) |
 | Math/data-viz scene Remotion struggles with | **`manim-fallback`** (escape hatch) |
 | Unfamiliar Remotion 4 API | **`docs-seeker`** with query "Remotion 4 <feature>" |
 
-Skills you must NOT call: `taw-video-commit` (orchestrator does that), `voice-tts-vi` (parallel branch handles voice), `ffmpeg-pipeline` (renderer agent's job).
+Skills you must NOT call: `taw-video-commit` (orchestrator does that), `ffmpeg-pipeline` (renderer agent's job). (`voice-tts-vi` and `captions-vi-burn` no longer exist — taw-video v0.1.1 removed TTS; output is silent motion graphic.)
 
 ## Workflow
 

@@ -1,11 +1,11 @@
 ---
 name: motion-tuner
 description: >
-  Tightens animation timing + easing curves AFTER scene-coder finishes. Reads
-  scenes + voice file (if present), syncs scene cuts to voice peaks within ±200ms,
-  picks easing per motion-style (subtle/playful/aggressive/cinematic), removes
-  jitter from auto-generated animations. Invoked by /taw-video CREATE Step 5.2
-  in parallel with voice-tts-vi.
+  Tightens animation timing + easing curves AFTER scene-coder finishes. Picks
+  easing per motion-style (subtle/playful/aggressive/cinematic), removes jitter
+  from auto-generated animations, ensures aesthetic consistency across scenes.
+  No audio sync — taw-video output is silent motion graphic. Invoked by
+  /taw-video CREATE Step 5.2.
 model: sonnet
 ---
 
@@ -25,7 +25,6 @@ Full rules: `terse-internal` skill.
 
 - `src/scenes/*.tsx` — scenes from scene-coder
 - `.taw-video/design.json` — motion_style hint
-- `public/voice.mp3` (if exists; ignore if kinetic-typography format)
 - `.taw-video/storyboard.md` — beat curve
 
 ## Skills you MUST consult
@@ -33,7 +32,6 @@ Full rules: `terse-internal` skill.
 | When... | Invoke |
 |---|---|
 | Need easing reference for motion_style | Read `skills/motion-presets-vi/lib/easing.ts` (when generated) |
-| Audio waveform analysis | Use `ffprobe` via Bash, no skill |
 
 ## Job 1 — Pick easing per motion_style
 
@@ -48,24 +46,15 @@ Read `design.json.motion_style`. Apply a global easing override per scene's `int
 
 Don't override scenes that explicitly override (preserve user/scene-coder intent).
 
-## Job 2 — Sync to voice (if voice exists)
+## Job 2 — Beat-curve tuning
 
-Use ffprobe to extract voice silence boundaries:
+Read storyboard.md beat values. For each scene, ensure entry+exit timing matches its energy:
 
-```bash
-ffmpeg -i public/voice.mp3 -af "silencedetect=noise=-30dB:d=0.4" -f null - 2>&1 \
-  | command grep "silence" \
-  | head -20
-```
+- Beat 5 (peak hype) → fast entry (≤8 frames), held high amplitude, fast exit
+- Beat 3 (medium) → moderate entry (12–18 frames), settle, fade out
+- Beat 1 (chill) → slow ease-in (24+ frames), gentle hold
 
-Parse output: each silence start/end is a candidate scene cut point.
-
-Cross-reference with current scene cut times (sum of `Sequence` `from` + `durationInFrames` for each scene). For each scene cut:
-
-- If a silence boundary exists within ±300ms → snap scene cut to silence end (so visual cut hits when voice resumes).
-- If no silence within ±500ms → leave alone (scene cuts in middle of speech, intentional).
-
-Update `Sequence` `from` / `durationInFrames` accordingly. Re-balance subsequent scenes so total duration unchanged.
+If scene's actual entry frames don't match beat target by >50%, adjust.
 
 ## Job 3 — Remove jitter
 
@@ -96,7 +85,7 @@ Exit 0 = pass. On error, revert last edit, escalate.
 Return:
 
 ```
-motion tuned: easing=playful, 5 cuts synced to voice (±150ms avg drift), 3 jitter fixes
+motion tuned: easing=playful, 4 beat-curve fixes, 3 jitter fixes
 ```
 
 Files modified (Edit tool only, no new files):
@@ -108,5 +97,4 @@ Files modified (Edit tool only, no new files):
 - ONLY use Edit tool. Never Write (don't create new files).
 - Don't change scene CONTENT (text, props, layout) — only timing + easing.
 - Don't override scene-coder's per-scene easing if it's explicit (e.g. has a comment `// easing chosen for X reason`).
-- If voice.mp3 doesn't exist (kinetic-typography), skip Job 2 entirely.
-- Time budget: <60 seconds. If voice analysis is taking longer, skip silence detection and use defaults.
+- Time budget: <60 seconds.

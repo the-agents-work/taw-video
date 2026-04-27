@@ -1,9 +1,9 @@
 ---
 name: error-to-vi
 description: >
-  Translate common Remotion, ffmpeg, TTS, npm, and Node errors into plain
-  Vietnamese with actionable fix hints. Used by /taw-video orchestrator and
-  every branch so non-dev users never see raw English error messages.
+  Translate common Remotion, ffmpeg, npm, and Node errors into plain Vietnamese
+  with actionable fix hints. Used by /taw-video orchestrator and every branch
+  so non-dev users never see raw English error messages.
 argument-hint: "[error message text]"
 ---
 
@@ -22,7 +22,7 @@ Take raw English error output and return a plain Vietnamese explanation with a s
 | `Composition with id "X" not found` | "Không tìm thấy composition `X` trong src/Root.tsx" | "Đăng ký composition vào Root.tsx hoặc gõ `/taw-video edit` để em fix." |
 | `Cannot find module '@remotion/...'` | "Chưa cài package Remotion `<tên>`" | `npm install @remotion/<tên>` |
 | `The duration of the video is X but composition is Y` | "Tổng độ dài video không khớp với composition" | "Em sẽ tự đồng bộ — chạy `/taw-video edit pacing`." |
-| `Cannot use audio file in this context` | "Audio file không hợp lệ hoặc thiếu" | "Kiểm tra `public/voice.mp3` có tồn tại không. Nếu chưa có, chạy `/taw-video edit voice`." |
+| `Cannot use audio file in this context` | "BGM file không hợp lệ hoặc thiếu" | "Kiểm tra `public/bgm.mp3` có tồn tại không. Nếu không cần BGM, xoá `<Audio>` import trong Root.tsx." |
 | `Hydration failed because the initial UI does not match` | "Lỗi React hydration — thường do dùng `Math.random()` trong scene" | "Thay `Math.random()` bằng `random(frame)` từ remotion lib." |
 
 ### ffmpeg errors
@@ -31,19 +31,14 @@ Take raw English error output and return a plain Vietnamese explanation with a s
 |---|---|---|
 | `Unknown encoder 'libx264'` | "ffmpeg trên máy thiếu encoder H.264 (libx264)" | "Cài lại ffmpeg full: `brew reinstall ffmpeg --with-x264`. Hoặc đổi codec: `/taw-video render --codec=vp9`" |
 | `Unable to find a suitable output format for ...` | "ffmpeg không nhận format file output" | "Kiểm tra extension đuôi file (.mp4 / .mov / .webm). Hoặc thêm `-f mp4` thủ công." |
-| `Subtitles: cannot find font` | "Font cho phụ đề không có trên máy" | "Cài Be Vietnam Pro: `brew install --cask font-be-vietnam-pro`. Sau đó `fc-cache -f`." |
-| `No such file or directory` (subtitles) | "File phụ đề `.vtt` không tồn tại" | "Chạy `/taw-video edit captions` để gen lại." |
 | `Conversion failed!` (generic) | "Convert video thất bại — xem stderr ở trên để biết lý do cụ thể" | "Thử lại với codec khác hoặc giảm độ phân giải." |
 
-### TTS errors
+### Font errors (VN diacritic rendering)
 
 | English error | Vietnamese | Fix hint |
 |---|---|---|
-| `401 Unauthorized` (TTS) | "API key TTS sai hoặc hết hạn" | "Kiểm tra ELEVENLABS_API_KEY / FPT_API_KEY / OPENAI_API_KEY trong `.env.local`" |
-| `Insufficient credits` / `quota exceeded` | "Tài khoản TTS hết credit" | "Top up tài khoản hoặc đổi provider: `/taw-video edit voice provider=fpt-ai` (free tier)." |
-| `Voice not found` | "Voice ID không tồn tại trên provider này" | "Liệt kê voice: `/taw-video edit voice --list`" |
-| `Text too long` (FPT.AI 5000 char limit) | "Script vượt giới hạn 5000 ký tự của FPT.AI" | "Em sẽ tự chia nhỏ + ghép lại — chạy `/taw-video edit voice` lần nữa." |
-| `Language not supported` | "Provider này không hỗ trợ tiếng Việt" | "Đổi sang FPT.AI hoặc OpenAI: `/taw-video edit voice provider=fpt-ai`" |
+| `Font 'Be Vietnam Pro' not found` | "Font Be Vietnam Pro chưa cài → text VN có thể bị lỗi dấu" | "Cài: `brew install --cask font-be-vietnam-pro`. Sau đó `fc-cache -f` (Linux)." |
+| Missing glyph warning | "Một số ký tự VN (đ, ầ, ố...) không render đúng" | "Đổi sang Inter hoặc Noto Sans Vietnamese trong `.taw-video/design.json`." |
 
 ### npm / Node errors
 
@@ -55,13 +50,6 @@ Take raw English error output and return a plain Vietnamese explanation with a s
 | `Error: listen EADDRINUSE :::3000` | "Cổng 3000 đang được dùng" | "Chạy: `npx kill-port 3000` rồi thử lại" |
 | `ENOSPC: no space left on device` | "Máy hết dung lượng đĩa" | "Xoá `node_modules/` + `out/`, chạy `npm install` lại." |
 | `esbuild platform mismatch` | "esbuild không match architecture máy (x86 vs ARM64)" | "`rm -rf node_modules package-lock.json && npm install --include=optional`" |
-
-### Whisper / captions errors
-
-| English error | Vietnamese | Fix hint |
-|---|---|---|
-| `whisper: command not found` | "Chưa cài Whisper local" | "Cài: `pip install openai-whisper`. Hoặc dùng API: thêm `OPENAI_API_KEY` vào `.env.local`." |
-| `RuntimeError: CUDA out of memory` | "GPU hết VRAM khi chạy Whisper" | "Đổi model nhỏ hơn: `whisper --model base`. Hoặc dùng API thay vì local." |
 
 ### Generic / fallback
 

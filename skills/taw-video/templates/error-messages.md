@@ -1,6 +1,6 @@
 # Error message templates — /taw-video
 
-Translate these to Vietnamese (default) when emitting to user. Internal logs stay English.
+Translate to Vietnamese (default) when emitting to user. Internal logs stay English.
 
 ## Generic failure
 
@@ -64,43 +64,17 @@ Em sẽ tự fix:
 Đợi 30s nhé.
 ```
 
-## TTS: insufficient credits
+## Font missing (VN diacritics broken)
 
 ```
-Tài khoản TTS (<provider>) hết credit rồi anh.
+Font Be Vietnam Pro chưa có trên máy → text VN có thể bị lỗi dấu (□ hoặc ?).
 
-Lựa chọn:
-  1. Top up tại: <provider URL>
-  2. Đổi provider: /taw-video edit voice provider=fpt-ai
-     (FPT.AI có free tier ~5000 ký tự/tháng, giọng VN tốt nhất)
-  3. Skip voice tạm: /taw-video edit voice off
-     (chỉ render visual + sub, voice add sau)
-```
+Cài font:
+  macOS:   brew install --cask font-be-vietnam-pro
+  Linux:   curl -L https://fonts.google.com/download?family=Be%20Vietnam%20Pro -o /tmp/bvp.zip
+           unzip /tmp/bvp.zip -d ~/.local/share/fonts/ && fc-cache -f
 
-## TTS: Vietnamese voice not available
-
-```
-Provider <X> không hỗ trợ giọng tiếng Việt. Đổi sang FPT.AI hoặc OpenAI:
-
-  /taw-video edit voice provider=fpt-ai voice=leminh   (nam Bắc)
-  /taw-video edit voice provider=fpt-ai voice=banmai   (nữ Bắc)
-  /taw-video edit voice provider=fpt-ai voice=minhquang (nam Nam)
-  /taw-video edit voice provider=fpt-ai voice=lannhi   (nữ Nam)
-
-Hoặc OpenAI (giọng đọc trung tính, khá tự nhiên):
-  /taw-video edit voice provider=openai voice=nova
-```
-
-## Subtitle: missing diacritics in burn-in
-
-```
-Sub bị lỗi dấu tiếng Việt (chữ ô/ê/đ hiển thị thành □ hoặc ?).
-Lý do: font không có Unicode đầy đủ.
-
-Em đổi sang Be Vietnam Pro (full Unicode + open-source) rồi render lại:
-  /taw-video render captions=be-vietnam-pro
-
-Hoặc dùng font khác có VN: Inter, Noto Sans Vietnamese.
+Em fallback sang Inter nếu không có. Cài xong render lại sẽ ngon hơn.
 ```
 
 ## Render takes too long

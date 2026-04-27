@@ -1,20 +1,15 @@
 # Preset: news-recap
 
-Quick news/event summary (45–90s). Neutral or urgent mood, third-person, dates+numbers explicit.
+Quick news/event motion graphic (30–60s). Neutral or urgent mood, headlines + data callouts, silent — user adds neutral news voice externally.
 
 ## Pre-filled defaults
 
 ```yaml
 format: news-recap
-duration_sec: 60
+duration_sec: 45
 aspect_primary: 16:9
 aspect_secondary: 9:16
 fps: 30
-
-voice:
-  provider: fpt-ai
-  voice_id: banmai        # nữ Bắc, news authoritative
-  speed: 0
 
 palette:
   bg: "#000000"
@@ -30,30 +25,26 @@ typography:
 
 motion_style: cinematic   # smooth, not flashy
 
+on_screen_text_density: medium  # ~50 words; headlines + dates + key stats
+
 scene_structure:
   - { type: TitleCard, duration: 3 }           # "TIN MỚI / BREAKING"
   - { type: HeadlineCallout, duration: 4 }     # main headline
-  - { type: LowerThird, duration: 8 }          # source + date metadata
-  - { type: KineticQuote, duration: 10 }       # key fact / quote
-  - { type: DataBar, duration: 12 }            # numbers (when relevant)
+  - { type: LowerThird, duration: 6 }          # source + date metadata
+  - { type: KineticQuote, duration: 8 }        # key fact
+  - { type: DataBar, duration: 10 }            # numbers (when relevant)
   - { type: ComparisonSplit, duration: 10 }    # before/after, then/now
-  - { type: EndCard, duration: 5 }             # source attribution
+  - { type: EndCard, duration: 4 }             # source attribution
 
 bgm:
   mood: cinematic-tension
-  volume: 0.3             # lower for news authority
-  duck_under_voice: true
-
-captions:
-  burn_in: true
-  style: clean
-  # In news, captions repeat the voice almost verbatim — for low-sound viewing
+  optional: true
 ```
 
 ## Style notes
 
 - **Always cite sources** in lower-third or end-card. "Theo VnExpress, 26/04/2026" — establishes credibility.
-- **Numbers spelled clearly** in script ("12 tỷ" → "mười hai tỷ" if TTS misreads).
+- **Numbers spelled clearly** in on-screen labels — viewer reads silently.
 - **No editorial framing** unless explicitly satirical preset.
 - **Date stamp** in title card so reuploads are clearly historical.
 

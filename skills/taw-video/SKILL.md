@@ -4,7 +4,10 @@ description: >
   Single entrypoint for taw-video. User types `/taw-video <anything in VN or EN>` —
   this skill classifies the intent (CREATE / EDIT / RENDER / REMIX / ADVISOR) and
   loads the matching branch file to execute. Sibling of taw-kit's /taw command but
-  scoped to motion-graphic video generation: Remotion + ffmpeg + TTS pipeline.
+  scoped to silent motion-graphic video generation: Remotion + ffmpeg, no TTS.
+  Output is silent video — user adds voice externally in their editor (CapCut /
+  Premiere / DaVinci) if narration is desired. Optional BGM bundled via Remotion
+  <Audio> if user provides a track.
   User-visible strings match the user's input language (Vietnamese by default).
   Two modes: SAFE (default — clarify + storyboard approval) and YOLO (skip gates,
   smart defaults). YOLO triggers: prose contains `yolo`, `nhanh nha`, `lam luon`,
@@ -14,10 +17,9 @@ description: >
     "video tutorial", "video about", "video gioi thieu", "video kinetic",
     "video motion", "video san pham", "video gioi thieu app", "video review",
     "video reaction", "video faceless", "lam clip", "tao clip", "render video moi".
-  EDIT (modify scenes/script/voice): "shorten scene", "longer scene", "doi giong",
-    "doi nhac", "sua canh", "sua sub", "sua loi thoai", "doi mau", "doi font",
-    "edit scene", "rewrite script", "change voice", "tweak animation",
-    "lam lai canh", "ghep canh", "xoa canh", "them canh".
+  EDIT (modify scenes/text/style): "shorten scene", "longer scene", "doi nhac",
+    "sua canh", "doi text", "doi mau", "doi font", "edit scene", "rewrite text",
+    "tweak animation", "lam lai canh", "ghep canh", "xoa canh", "them canh".
   RENDER (re-export different format): "render 9:16", "render shorts", "render tiktok",
     "render 1:1", "render instagram", "render mp4", "render gif", "render webm",
     "xuat 9:16", "xuat tiktok", "xuat shorts", "xuat 1080p", "xuat 4k", "convert to gif".
@@ -26,7 +28,7 @@ description: >
     "khac noi dung nhung giu phong cach".
   ADVISOR (read-only opinion): "review video", "check video", "danh gia video",
     "xem chat luong", "video co dep khong", "video co on khong", "feedback video",
-    "review storyboard", "kiem tra audio sync", "audit video".
+    "review storyboard", "kiem tra dau", "audit video".
 argument-hint: "<mô tả video muốn làm bằng tiếng Việt / describe what video you want>"
 allowed-tools: Task, Skill, Read, Write, Edit, Bash, Glob, Grep
 ---
@@ -95,7 +97,7 @@ If a branch fails:
    {"status":"failed","branch":"<name>","last_error":"<compact>","next_action":"Try /taw-video <verb>"}
    ```
 4. Emit error template from `templates/error-messages.md` (VN if user input was VN).
-5. If error contains TTS / ffmpeg / Remotion stderr, invoke `error-to-vi` skill to translate.
+5. If error contains ffmpeg / Remotion stderr, invoke `error-to-vi` skill to translate.
 
 ## State files
 
@@ -104,19 +106,18 @@ All taw-video state lives in `.taw-video/` (gitignored — note the directory na
 - `.taw-video/intent.json` — classified intent + mode + branch loaded + clarifications
 - `.taw-video/storyboard.md` — approved storyboard (CREATE / REMIX branches)
 - `.taw-video/checkpoint.json` — `{status, last_branch, last_render_path?, last_error?}`
-- `.taw-video/script.txt` — final TTS-ready narration text
-- `.taw-video/captions.vtt` — generated captions (VN-aware)
+- `.taw-video/scene-text.json` — per-scene on-screen text payload (titles, headlines, callouts)
+- `.taw-video/script.meta.json` — script-writer sidecar (word counts, hooks considered, tone)
 - `.taw-video/design.json` — palette + typography + motion-style tokens
 
-NEVER write API keys (ELEVENLABS_API_KEY, FPT_API_KEY, OPENAI_API_KEY) into `.taw-video/`. Keys live in `.env.local` only.
+NEVER write API keys (Replicate / Together / OpenAI for asset-gen) into `.taw-video/`. Keys live in `.env.local` only.
 
 ## Stack adaptation rule
 
-Default stack is **Remotion 4 + Tailwind + ffmpeg + voice-tts-vi (FPT.AI default)**. For existing video projects, detect first:
+Default stack is **Remotion 4 + Tailwind + ffmpeg**. Output is silent motion graphic — voice is OUT OF SCOPE; user adds it externally if desired. For existing video projects, detect first:
 
 1. **Read `package.json`** — map deps:
    - Video framework: `remotion` vs `@motion-canvas/core` vs `manim` (python deps in `requirements.txt`)
-   - TTS: `elevenlabs` SDK vs custom FPT/OpenAI wrappers
    - Video utils: `fluent-ffmpeg`, `ffmpeg-static`
 2. **Read `remotion.config.ts` / `motion-canvas.config.ts`** — confirm framework.
 3. **Adapt:**
@@ -132,9 +133,9 @@ taw-video defaults to **autonomous action for safe ops**, not "ask before everyt
 
 | Class | Examples | Behaviour |
 |---|---|---|
-| **AUTO** | commit Remotion source, install declared deps, run `remotion render`, generate captions, save state to `.taw-video/`, dry-run preview | Just do it. 1-line result. |
-| **CONFIRM ONCE** | switch TTS provider, regenerate full voice (cost), overwrite existing scene component, change aspect ratio of all renders | Ask ONE question, do, don't re-ask. |
-| **HARD GATE** | delete render outputs, `git push --force`, override user-edited script, regenerate with paid API > 1000 chars | Require explicit text confirmation. |
+| **AUTO** | commit Remotion source, install declared deps, run `remotion render`, save state to `.taw-video/`, dry-run preview | Just do it. 1-line result. |
+| **CONFIRM ONCE** | overwrite existing scene component, change aspect ratio of all renders, switch BGM track | Ask ONE question, do, don't re-ask. |
+| **HARD GATE** | delete render outputs, `git push --force`, override user-edited scene-text, regenerate assets with paid API | Require explicit text confirmation. |
 
 **Exception — safe-mode storyboard gate (CREATE branch):** Step 4 storyboard approval is a deliberate hard-gate because rendering 60s of wrong video burns ~5 minutes + TTS API credits. Single approved interruption per CREATE run.
 
@@ -143,7 +144,7 @@ taw-video defaults to **autonomous action for safe ops**, not "ask before everyt
 - **One entrypoint, one command.** Do NOT add new top-level `/taw-video-*` skills — add a new branch file under `branches/` instead.
 - **Default stack**: Remotion 4 + Tailwind + ffmpeg. Override if project is Motion Canvas / Manim.
 - **Render outputs never go to git.** Always check `.gitignore` before commit.
-- **Voice budget warning**: TTS is paid per-character. Before running `voice-tts-vi` on >2000 chars, emit token estimate + cost.
+- **No TTS / voice generation**: taw-video v0.1.1 produces silent motion graphics. User adds voice externally in their video editor (CapCut / Premiere / DaVinci) if they want narration. This is intentional — keeps the kit fast and lets users use whatever voice provider they prefer.
 - **Empty args**: let router emit its menu. Do not pre-empt.
 - **Language consistency**: detect on first interaction, keep for whole session.
 

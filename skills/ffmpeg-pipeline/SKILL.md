@@ -1,13 +1,14 @@
 ---
 name: ffmpeg-pipeline
 description: >
-  ffmpeg recipes for common taw-video tasks: mux video+voice+captions, side-chain
-  duck BGM under voice, scale to multiple aspect ratios, encode H.264/H.265/VP9,
-  GIF export, frame extraction for review, audio-level normalization (EBU R128).
-  Used by renderer agent + render branch. NOT a wrapper — emits actual ffmpeg
-  commands so users learn standard tooling.
-  Trigger phrases (EN + VN): "ffmpeg", "mux audio", "ghep am thanh", "convert video",
-  "compress mp4", "extract frame", "duck audio", "side chain", "gif export".
+  ffmpeg recipes for common taw-video tasks: scale to multiple aspect ratios,
+  encode H.264/H.265/VP9, compress for upload (YT/TikTok/web/4K), GIF export,
+  frame extraction for review. Used by renderer agent + render branch. NOT a
+  wrapper — emits actual ffmpeg commands so users learn standard tooling.
+  Note: taw-video v0.1.1 produces silent video; voice mux is OUT OF SCOPE
+  (user mixes audio externally in their editor).
+  Trigger phrases (EN + VN): "ffmpeg", "convert video", "compress mp4",
+  "extract frame", "gif export", "scale video", "render h265", "encode 4k".
 allowed-tools: Read, Bash
 ---
 
@@ -25,48 +26,30 @@ ffmpeg -encoders 2>&1 | command grep -E "libx264|libx265|libvpx-vp9" | head -3
 
 Should show all three. If `libx264` missing → user has minimal build → escalate "ffmpeg encoder missing" error template.
 
-## Recipe 1 — Mux video + voice (silent video has no audio track)
+## Recipe 1 — Compress for upload
+
+| Target | Recipe |
+|---|---|
+| YouTube 1080p | `-c:v libx264 -crf 18 -preset slow -b:v 8M -maxrate 12M -bufsize 16M` |
+| YouTube 4K | `-c:v libx265 -crf 22 -preset medium -tag:v hvc1` |
+| TikTok 9:16 | `-c:v libx264 -crf 23 -preset medium -b:v 6M` |
+| Web preview | `-c:v libx264 -crf 28 -preset fast -b:v 2M` |
+| GIF | see Recipe 6 |
+
+Full example (TikTok):
 
 ```bash
-ffmpeg -i out/<slug>-<aspect>.mp4 \
-       -i public/voice.mp3 \
-       -c:v copy -c:a aac -b:a 192k \
-       -map 0:v -map 1:a \
-       -shortest \
-       out/<slug>-<aspect>-voiced.mp4
+ffmpeg -i out/<slug>-9x16.mp4 \
+       -c:v libx264 -crf 23 -preset medium -b:v 6M \
+       -movflags +faststart \
+       out/<slug>-9x16-tiktok.mp4
 ```
 
-`-shortest` ensures output ends when shortest stream ends (handles voice slightly shorter/longer than visual).
+`-movflags +faststart` moves moov atom to start → enables progressive playback in browsers.
 
-## Recipe 2 — Mux video + voice + BGM with side-chain duck
+If the input has BGM (Remotion bundled it via `<Audio>`), keep it: add `-c:a aac -b:a 128k` (or `-c:a copy` if already AAC).
 
-BGM should DIP when voice plays (~6dB drop), restore when voice stops. Standard "ducking":
-
-```bash
-ffmpeg -i out/<slug>-<aspect>.mp4 \
-       -i public/voice.mp3 \
-       -i public/bgm.mp3 \
-       -filter_complex "[1:a]volume=1.0[voice]; \
-                        [2:a]volume=0.4[bgm]; \
-                        [bgm][voice]sidechaincompress=threshold=0.05:ratio=8:attack=20:release=300[bgm_ducked]; \
-                        [voice][bgm_ducked]amix=inputs=2:duration=longest[mixed]" \
-       -map 0:v -map "[mixed]" \
-       -c:v copy -c:a aac -b:a 192k \
-       out/<slug>-<aspect>-final.mp4
-```
-
-Tune: `threshold` lower = more aggressive duck. `ratio` higher = stronger duck. Above values are good defaults for talking-head pace.
-
-## Recipe 3 — Burn captions (delegated to captions-vi-burn skill, see there)
-
-```bash
-ffmpeg -i out/<slug>.mp4 \
-  -vf "subtitles=public/voice.vtt:force_style='FontName=Be Vietnam Pro,FontSize=28'" \
-  -c:a copy \
-  out/<slug>-subbed.mp4
-```
-
-## Recipe 4 — Scale to alternate aspect
+## Recipe 2 — Scale to alternate aspect (last resort — prefer Remotion re-render)
 
 Most cases: re-render via Remotion is better (uses scene's responsive layout). But if you must crop existing render:
 
@@ -89,39 +72,54 @@ ffmpeg -i out/<slug>-16x9.mp4 \
 
 Recommend re-render for primary deliverable; crop only for quick alt drops.
 
-## Recipe 5 — Compress for upload
-
-| Target | Recipe |
-|---|---|
-| YouTube 1080p | `-c:v libx264 -crf 18 -preset slow -b:v 8M -maxrate 12M -bufsize 16M -c:a aac -b:a 192k` |
-| YouTube 4K | `-c:v libx265 -crf 22 -preset medium -tag:v hvc1 -c:a aac -b:a 256k` |
-| TikTok 9:16 | `-c:v libx264 -crf 23 -preset medium -b:v 6M -c:a aac -b:a 128k` |
-| Web preview | `-c:v libx264 -crf 28 -preset fast -b:v 2M -c:a aac -b:a 96k` |
-| GIF | see Recipe 8 |
-
-Full example (TikTok):
+## Recipe 3 — Re-encode codec only (keep duration + audio + dimensions)
 
 ```bash
-ffmpeg -i out/<slug>-9x16-final.mp4 \
-       -c:v libx264 -crf 23 -preset medium -b:v 6M \
-       -c:a aac -b:a 128k \
-       -movflags +faststart \
-       out/<slug>-9x16-tiktok.mp4
+# H.264 → H.265 (smaller file)
+ffmpeg -i out/<slug>.mp4 -c:v libx265 -crf 24 -preset medium -tag:v hvc1 -c:a copy out/<slug>-h265.mp4
+
+# H.264 → VP9/WebM (open-source path)
+ffmpeg -i out/<slug>.mp4 -c:v libvpx-vp9 -crf 31 -b:v 0 -c:a libopus out/<slug>.webm
 ```
 
-`-movflags +faststart` moves moov atom to start → enables progressive playback in browsers.
-
-## Recipe 6 — Audio-level normalization (EBU R128)
-
-Different TTS providers output at different loudness. Normalize to broadcast standard:
+## Recipe 4 — Scale to specific resolution
 
 ```bash
-ffmpeg -i public/voice.mp3 \
-       -filter:a loudnorm=I=-16:TP=-1.5:LRA=11 \
-       public/voice-normalized.mp3
+# 1080p → 720p (keep aspect)
+ffmpeg -i out/<slug>.mp4 -vf "scale=-2:720" -c:a copy out/<slug>-720p.mp4
+
+# 1080p → 4K (upscale — quality cap = source)
+ffmpeg -i out/<slug>.mp4 -vf "scale=-2:2160:flags=lanczos" -c:v libx265 -crf 22 -c:a copy out/<slug>-4k.mp4
 ```
 
-Two-pass (better but slower) — use for final export, not iteration.
+## Recipe 5 — Concat multiple renders
+
+```bash
+# Create concat list
+cat > .taw-video/concat.txt <<EOF
+file 'out/intro.mp4'
+file 'out/main.mp4'
+file 'out/outro.mp4'
+EOF
+
+ffmpeg -f concat -safe 0 -i .taw-video/concat.txt -c copy out/full.mp4
+```
+
+`-c copy` is bit-perfect (no re-encode). Requires segments to share codec + dimensions + framerate (taw-video output usually does).
+
+## Recipe 6 — Export GIF (two-pass, palette-aware)
+
+```bash
+ffmpeg -i out/<slug>.mp4 \
+  -vf "fps=15,scale=720:-1:flags=lanczos,palettegen=stats_mode=diff" \
+  -y .taw-video/palette.png
+
+ffmpeg -i out/<slug>.mp4 -i .taw-video/palette.png \
+  -filter_complex "fps=15,scale=720:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" \
+  out/<slug>.gif
+```
+
+Result: ~30% smaller than single-pass, no banding.
 
 ## Recipe 7 — Extract frames for review
 
@@ -137,22 +135,7 @@ for pct in 25 50 75 90; do
 done
 ```
 
-## Recipe 8 — Export GIF
-
-```bash
-# Two-pass GIF (palette-aware, smaller + better quality)
-ffmpeg -i out/<slug>.mp4 \
-  -vf "fps=15,scale=720:-1:flags=lanczos,palettegen=stats_mode=diff" \
-  -y .taw-video/palette.png
-
-ffmpeg -i out/<slug>.mp4 -i .taw-video/palette.png \
-  -filter_complex "fps=15,scale=720:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" \
-  out/<slug>.gif
-```
-
-Result: ~30% smaller than single-pass, no banding.
-
-## Recipe 9 — Probe video stats (for reviewer agent)
+## Recipe 8 — Probe video stats (for video-reviewer agent)
 
 ```bash
 ffprobe -v error -show_entries \
@@ -160,24 +143,27 @@ ffprobe -v error -show_entries \
   -of json out/<slug>.mp4
 ```
 
-Returns codec, dimensions, fps, duration, file size, overall bitrate. Used by reviewer to validate output meets spec.
+Returns codec, dimensions, fps, duration, file size, overall bitrate. Used by video-reviewer to validate output meets spec.
 
-## Recipe 10 — Concat multiple voice segments
-
-When TTS was run in chunks (>5000 chars FPT.AI limit):
+## Recipe 9 — Add chapter markers (YT)
 
 ```bash
-# Create concat list
-cat > .taw-video/concat.txt <<EOF
-file 'voice-1.mp3'
-file 'voice-2.mp3'
-file 'voice-3.mp3'
-EOF
+# Edit metadata file at .taw-video/chapters.txt:
+;FFMETADATA1
+[CHAPTER]
+TIMEBASE=1/1000
+START=0
+END=15000
+title=Intro
 
-ffmpeg -f concat -safe 0 -i .taw-video/concat.txt -c copy public/voice.mp3
+[CHAPTER]
+TIMEBASE=1/1000
+START=15000
+END=45000
+title=Main content
+
+ffmpeg -i out/<slug>.mp4 -i .taw-video/chapters.txt -map_metadata 1 -c copy out/<slug>-chaptered.mp4
 ```
-
-`-c copy` is bit-perfect (no re-encode). Requires segments to share codec + sample rate (TTS output usually does).
 
 ## Performance notes
 
@@ -194,10 +180,10 @@ ffmpeg -f concat -safe 0 -i .taw-video/concat.txt -c copy public/voice.mp3
 ```json
 {
   "status": "ok",
-  "recipe": "mux-voice-bgm-duck",
-  "input_files": ["out/raw.mp4", "public/voice.mp3", "public/bgm.mp3"],
-  "output_path": "out/<slug>-<aspect>-final.mp4",
-  "size_mb": 12.4,
+  "recipe": "compress-tiktok-9x16",
+  "input_files": ["out/<slug>-9x16.mp4"],
+  "output_path": "out/<slug>-9x16-tiktok.mp4",
+  "size_mb": 6.2,
   "duration_sec": 60.0
 }
 ```
@@ -208,3 +194,4 @@ ffmpeg -f concat -safe 0 -i .taw-video/concat.txt -c copy public/voice.mp3
 - ALWAYS include `-movflags +faststart` for MP4 outputs.
 - NEVER trust user-provided ffmpeg args without reading them — `-vf "blah; rm -rf /"` is shell-injectable. Sanitize via Bash quoting.
 - Single source of truth for filter graphs: `-filter_complex` for >1 filter, `-vf` / `-af` for single filter.
+- Voice mux / side-chain duck recipes are OUT OF SCOPE in v0.1.1 — taw-video produces silent video; user adds voice externally.

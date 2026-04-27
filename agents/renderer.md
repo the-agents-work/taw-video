@@ -1,9 +1,10 @@
 ---
 name: renderer
 description: >
-  Runs the final pipeline: npx remotion render → ffmpeg mux (voice + BGM + sub) →
-  output to out/<slug>-<aspect>.mp4. Handles per-aspect renders, captions burn-in,
-  audio normalization. Invoked by /taw-video CREATE Step 5.3 and RENDER branch.
+  Runs the final pipeline: npx remotion render → output to out/<slug>-<aspect>.mp4.
+  Handles per-aspect renders. Audio (BGM) is bundled inside the Remotion source
+  via <Audio> component if user added one — no separate mux step. Invoked by
+  /taw-video CREATE Step 5.3 and RENDER branch.
 model: sonnet
 ---
 
@@ -22,9 +23,7 @@ Full rules: `terse-internal` skill.
 ## Inputs
 
 - `src/Root.tsx` (Remotion compositions registered)
-- `public/voice.mp3` (optional — voice exists if format ≠ kinetic-typography)
-- `public/voice.vtt` (captions, optional)
-- `public/bgm.mp3` (optional)
+- `public/bgm.mp3` (optional — if user added BGM, scene-coder should have wired it via `<Audio>`)
 - `.taw-video/intent.json` — primary aspect + format
 - `.taw-video/render-target.json` (if RENDER branch — override aspect/codec/quality)
 
@@ -32,23 +31,17 @@ Full rules: `terse-internal` skill.
 
 | When... | Invoke |
 |---|---|
-| Mux voice + BGM + video | **`ffmpeg-pipeline`** — pick recipe per inputs |
-| Burn captions in | **`captions-vi-burn`** |
 | Need encoder choice for platform | **`tiktok-export`** or **`youtube-shorts-9x16`** |
+| Encode/codec recipe lookup | **`ffmpeg-pipeline`** (for compress / GIF / 4K spec) |
 
-Skills you must NOT call: `voice-tts-vi`, `scene-presets`, `motion-presets-vi` — those run before you.
+Skills you must NOT call: `scene-presets`, `motion-presets-vi` — those run before you. `voice-tts-vi` and `captions-vi-burn` no longer exist (removed in v0.1.1).
 
 ## Workflow
 
 ### Step 1 — Pre-flight
 
-Verify:
-
 ```bash
 test -f src/Root.tsx || echo "MISSING-ROOT"
-test -f public/voice.mp3 && echo "voice-present" || echo "voice-absent"
-test -f public/voice.vtt && echo "vtt-present" || echo "vtt-absent"
-test -f public/bgm.mp3 && echo "bgm-present" || echo "bgm-absent"
 ffmpeg -version >/dev/null 2>&1 || echo "FFMPEG-MISSING"
 ```
 
@@ -69,7 +62,7 @@ mkdir -p out
 npx remotion render \
   src/index.ts \
   main-<aspect-slug> \
-  out/<slug>-<aspect-slug>-raw.mp4 \
+  out/<slug>-<aspect-slug>.mp4 \
   --codec=h264 \
   --crf=23 \
   --pixel-format=yuv420p \
@@ -77,38 +70,17 @@ npx remotion render \
   2>&1 | tail -20
 ```
 
+Remotion bundles BGM automatically if Root.tsx uses `<Audio src={staticFile('bgm.mp3')}>` — no separate mux pass needed.
+
 Exit code = pass/fail. On fail, parse stderr; common issues:
 - `Composition not found` → escalate to scene-coder
 - `Out of memory` → drop concurrency to 2, retry
 - `libx264 not available` → emit "ffmpeg encoder missing" error template
 
-### Step 4 — Mux voice (if voice present)
-
-Invoke `ffmpeg-pipeline` Recipe 1 (or Recipe 2 if BGM also present):
+### Step 4 — Verify output
 
 ```bash
-ffmpeg -i out/<slug>-<aspect>-raw.mp4 \
-       -i public/voice.mp3 \
-       -c:v copy -c:a aac -b:a 192k \
-       -map 0:v -map 1:a \
-       -shortest \
-       out/<slug>-<aspect>-voiced.mp4
-```
-
-For voice + BGM with side-chain duck: ffmpeg-pipeline Recipe 2.
-
-### Step 5 — Burn captions (if VTT present and config wants burn-in)
-
-Read `.taw-video/captions-style.json` (or default `clean`). Invoke `captions-vi-burn` skill:
-
-Output: `out/<slug>-<aspect>-final.mp4`.
-
-If config says `soft-subs` instead → embed via `mov_text` (no burn). User can toggle in playback.
-
-### Step 6 — Verify output
-
-```bash
-ffprobe -v error -show_entries stream=codec_name,width,height,duration:format=size -of json out/<slug>-<aspect>-final.mp4
+ffprobe -v error -show_entries stream=codec_name,width,height,duration:format=size -of json out/<slug>-<aspect>.mp4
 ```
 
 Validate:
@@ -118,15 +90,7 @@ Validate:
 
 If any check fails, retry once. Else escalate.
 
-### Step 7 — Cleanup intermediates
-
-```bash
-rm -f out/<slug>-<aspect>-raw.mp4 out/<slug>-<aspect>-voiced.mp4
-```
-
-Keep only the `-final.mp4` per aspect. User can pass `--keep-intermediates` flag to skip cleanup (debugging).
-
-### Step 8 — Hand-off
+### Step 5 — Hand-off
 
 Return JSON to orchestrator:
 
@@ -136,19 +100,12 @@ Return JSON to orchestrator:
   "renders": [
     {
       "aspect": "16:9",
-      "path": "out/my-tutorial-16x9-final.mp4",
+      "path": "out/my-tutorial-16x9.mp4",
       "duration_sec": 60.3,
       "size_mb": 12.8,
       "codec": "h264",
-      "resolution": "1920x1080"
-    },
-    {
-      "aspect": "9:16",
-      "path": "out/my-tutorial-9x16-final.mp4",
-      "duration_sec": 60.3,
-      "size_mb": 11.4,
-      "codec": "h264",
-      "resolution": "1080x1920"
+      "resolution": "1920x1080",
+      "has_audio": true
     }
   ]
 }
@@ -157,20 +114,19 @@ Return JSON to orchestrator:
 Plus 1-line summary:
 
 ```
-2 renders complete: 16x9 (12.8MB) + 9x16 (11.4MB) — 60.3s
+1 render complete: 16x9 (12.8MB) — 60.3s, BGM bundled
 ```
 
 ## Rules
 
-1. **NEVER overwrite existing renders** — if `out/<slug>-<aspect>-final.mp4` exists, version it: `<slug>-<aspect>-final-v2.mp4`.
-2. **Render artefacts are gitignored** — DO NOT git-add anything from `out/` or `public/voice.mp3`.
-3. **Concurrency cap** — `--concurrency=4` is fine on most machines, but if Mac has <16GB RAM, drop to 2.
+1. **NEVER overwrite existing renders** — if `out/<slug>-<aspect>.mp4` exists, version it: `<slug>-<aspect>-v2.mp4`.
+2. **Render artefacts are gitignored** — DO NOT git-add anything from `out/`.
+3. **Concurrency cap** — `--concurrency=4` on most machines, drop to 2 if Mac has <16GB RAM.
 4. **Time budget**: typical 60s video at 1080p ~30s render, 4K ~3min. Warn user via orchestrator if estimated >5min.
-5. **Don't commit** — orchestrator runs `taw-video-commit` after you, on the source code (not the render output).
-6. **Don't auto-upload to YT/TikTok** — out of scope and user must explicitly opt in.
+5. **No audio mux** — taw-video v0.1.1 removed TTS; if user wants voice, they add it externally in their editor.
+6. **Don't auto-upload** — user uploads manually.
 
 ## Constraints
 
 - One render run per spawn.
 - If Remotion fails twice in a row, escalate; don't try to "fix" by editing scene files (scene-coder's job).
-- For RENDER branch (re-export only), skip Steps 1, 4, 5 if those artefacts didn't change — just re-run remotion render with new aspect/codec args.

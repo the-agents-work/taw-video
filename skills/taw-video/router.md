@@ -9,16 +9,16 @@ Pick exactly one.
 | Intent | Load | Signals (VN + EN) |
 |---|---|---|
 | `CREATE` | `@branches/create.md` | làm, tạo, lam, tao, make, create, new video, scaffold video, video về, video gioi thieu, video tutorial, lam clip, tao clip, "cho tôi 1 video", kinetic typography, motion graphic, faceless |
-| `EDIT` | `@branches/edit.md` | sửa, sua, edit, đổi, doi, change, rewrite, shorten, longer, "rút ngắn", "kéo dài", "đổi giọng", "đổi nhạc", "sửa cảnh", "đổi font", "đổi màu", "thêm cảnh", "xoá cảnh", "ghép cảnh" |
+| `EDIT` | `@branches/edit.md` | sửa, sua, edit, đổi, doi, change, rewrite, shorten, longer, "rút ngắn", "kéo dài", "đổi nhạc", "sửa cảnh", "đổi text", "đổi font", "đổi màu", "thêm cảnh", "xoá cảnh", "ghép cảnh" |
 | `RENDER` | `@branches/render.md` | render, xuất, xuat, export, convert, "9:16", "1:1", "16:9", shorts, tiktok, instagram, "ra mp4", "ra gif", "ra webm", "xuất 1080p", "xuất 4k" |
 | `REMIX` | `@branches/remix.md` | remix, "làm giống", "lam giong", "dùng lại template", "dung lai template", "lam tuong tu", "copy phong cách", "khác nội dung nhưng giữ phong cách", "use template", "based on previous" |
-| `ADVISOR` | `@branches/advisor.md` | review, đánh giá, danh gia, "video có ổn không", "video có đẹp không", "feedback", "kiểm tra audio sync", "kiem tra sub", "check storyboard", "audit video", "góp ý video" |
+| `ADVISOR` | `@branches/advisor.md` | review, đánh giá, danh gia, "video có ổn không", "video có đẹp không", "feedback", "kiểm tra dấu", "check storyboard", "audit video", "góp ý video" |
 
 ## Disambiguation — when keywords clash
 
 Common overlaps:
 
-- **"sửa video"** (edit/render) — if user mentions a specific scene/script/voice change → EDIT. If user mentions output format/aspect ratio → RENDER. If unclear: ask "Anh muốn em sửa nội dung cảnh hay xuất lại tỉ lệ khác?"
+- **"sửa video"** (edit/render) — if user mentions a specific scene/text/style change → EDIT. If user mentions output format/aspect ratio → RENDER. If unclear: ask "Anh muốn em sửa nội dung cảnh hay xuất lại tỉ lệ khác?"
 - **"làm lại video"** (create/remix) — if user keeps the same topic AND mentions previous video → REMIX. If new topic → CREATE. If unclear: ask "Anh muốn làm video mới hoàn toàn hay remix bản cũ?"
 - **"thêm cảnh"** (edit/create) — always EDIT (adding to existing video, not a new product).
 - **"render đẹp hơn"** (render/edit) — RENDER if it's about quality/bitrate/codec; EDIT if about visual changes (colors, animation).

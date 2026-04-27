@@ -1,6 +1,6 @@
 # Preset: faceless-channel
 
-YouTube/TikTok faceless content — voiceover + b-roll style. Hype/curious tone, hooks every 15s.
+YouTube/TikTok faceless content as motion graphic. Hype/curious tone, hooks every 10–15s, silent video — user voice-overs externally.
 
 ## Pre-filled defaults
 
@@ -10,11 +10,6 @@ duration_sec: 60
 aspect_primary: 9:16     # default to vertical for short-form
 aspect_secondary: 16:9
 fps: 30
-
-voice:
-  provider: fpt-ai
-  voice_id: lannhi        # nữ Nam, friendly + curious tone
-  speed: 0
 
 palette:
   bg: "#1a1a2e"           # near-black with blue tint
@@ -30,6 +25,8 @@ typography:
 
 motion_style: aggressive  # snappy, attention-grabbing
 
+on_screen_text_density: medium  # ~70 words; punchy phrases per beat
+
 scene_structure:
   - { type: HeadlineCallout, duration: 3 }     # 3-second hook is mandatory
   - { type: KineticQuote, duration: 7 }        # statement / claim
@@ -41,12 +38,7 @@ scene_structure:
 
 bgm:
   mood: hype-trap
-  volume: 0.5
-  duck_under_voice: true
-
-captions:
-  burn_in: true
-  style: youtube-shorts   # large yellow accent
+  optional: false         # faceless without BGM = empty; recommend BGM
 ```
 
 ## Hook engineering reminder
@@ -55,6 +47,8 @@ Hook = first 3 seconds. Faceless audiences swipe in 2s if no grab. ALWAYS:
 - Surprising stat ("97% người dùng AI sai cách")
 - Direct question ("Bạn dùng ChatGPT đúng chưa?")
 - Counter-intuitive claim ("Quên mọi thứ bạn biết về...")
+
+For silent faceless, the hook line is the LARGEST text on screen — fills 60%+ of frame.
 
 ## When to use
 
@@ -65,5 +59,5 @@ Hook = first 3 seconds. Faceless audiences swipe in 2s if no grab. ALWAYS:
 
 ## When NOT to use
 
-- Personal brand content → user is the face, doesn't fit
+- Personal brand → user is the face, doesn't fit
 - Tutorial step-by-step → tone too hype, info gets lost

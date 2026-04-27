@@ -127,11 +127,11 @@ If 0 staged files left → abort: "taw: nothing to commit (only render artefacts
 
 | Pattern | What it is |
 |---|---|
-| `.env`, `.env.local`, `.env.*.local` | Secrets (TTS keys, Remotion Lambda creds) |
+| `.env`, `.env.local`, `.env.*.local` | Secrets (asset-gen API keys, Remotion Lambda creds) |
 | `*.key`, `*.pem`, `*.p12`, `*.pfx` | Private keys |
 | `node_modules/**`, `dist/**`, `out/**`, `build/**` | Build artefacts |
 | `.taw-video/**` | taw-video local state |
-| `public/voice*.mp3`, `public/voice*.wav` | TTS-generated audio (regenerable) |
+| `public/voice*.mp3`, `public/voice*.wav` | User voice files (heavy, user-supplied) |
 | `public/audio-cache/**`, `public/video-cache/**` | Caches |
 | `media/videos/**` | Manim render output |
 | `.remotion/**` | Remotion build cache |
@@ -142,7 +142,7 @@ If 0 staged files left → abort: "taw: nothing to commit (only render artefacts
 git diff --cached | command grep -InE "$CONTENT_PATTERN"
 ```
 
-Common patterns (TTS-relevant added):
+Common patterns (asset-gen + cloud-render keys):
 
 | Source | Pattern |
 |---|---|
@@ -150,10 +150,8 @@ Common patterns (TTS-relevant added):
 | AWS access key | `AKIA[0-9A-Z]{16}` |
 | GitHub PAT | `(ghp\|gho\|ghu\|ghs\|ghr)_[A-Za-z0-9]{20,}` |
 | Google API key | `AIza[0-9A-Za-z\-_]{35}` |
-| ElevenLabs API key | `(?i)elevenlabs[_-]?api[_-]?key[[:space:]]*=[[:space:]]*['"]?[a-f0-9]{32}` |
-| FPT.AI API key | `(?i)fpt[_-]?api[_-]?key[[:space:]]*=[[:space:]]*[A-Za-z0-9]{20,}` |
-| Replicate token | `r8_[A-Za-z0-9]{36}` |
-| Together AI | `(?i)together[_-]?api[_-]?key` |
+| Replicate token (asset-gen) | `r8_[A-Za-z0-9]{36}` |
+| Together AI (asset-gen) | `(?i)together[_-]?api[_-]?key` |
 | PEM private key | `-----BEGIN (RSA\|EC\|OPENSSH\|PGP\|DSA)? ?PRIVATE KEY-----` |
 
 On hit:
